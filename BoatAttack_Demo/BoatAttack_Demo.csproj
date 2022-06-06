@@ -35,14 +35,17 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="gdio.common.objects">
-      <HintPath>..\..\..\Unity Projects\BoatAttack\Assets\GDIO\net471\gdio.common.objects.dll</HintPath>
+    <Reference Include="gdio.common.objects, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Unity Projects\BoatAttack\Assets\GDIO\gdio.common.objects.dll</HintPath>
     </Reference>
-    <Reference Include="gdio.plugin.serializer">
-      <HintPath>..\..\..\Unity Projects\BoatAttack\Assets\GDIO\net471\gdio.plugin.serializer.dll</HintPath>
+    <Reference Include="gdio.plugin.serializer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Unity Projects\BoatAttack\Assets\GDIO\gdio.plugin.serializer.dll</HintPath>
     </Reference>
-    <Reference Include="gdio.unity_api">
-      <HintPath>..\..\..\Unity Projects\BoatAttack\Assets\GDIO\net471\gdio.unity_api.dll</HintPath>
+    <Reference Include="gdio.unity_api, Version=2022.5.11.1936, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Unity Projects\BoatAttack\Assets\GDIO\gdio.unity_api.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework, Version=3.13.3.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
       <HintPath>..\packages\NUnit.3.13.3\lib\net45\nunit.framework.dll</HintPath>

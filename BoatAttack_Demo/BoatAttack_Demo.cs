@@ -15,7 +15,7 @@ namespace BoatAttack_Demo
         public void Connect()
         {
             api.Connect("localhost", 19734, true);
-            api.EnableHooks(HookingObject.ALL); // New input system
+            api.EnableHooks(HookingObject.MOUSE); // New input system
             /*
             api.LoggedMessage += (s, e) =>
             {
@@ -55,8 +55,12 @@ namespace BoatAttack_Demo
         [Test, Order(1)]
         public void MovementTest()
         {
-            api.WaitForObjectValue("(//*[@name='text_title'])[1]", "active", true);
-            api.KeyPress(new KeyCode[] { KeyCode.W }, (ulong)api.GetLastFPS() * 5);
+            //api.WaitForObjectValue("(//*[@name='text_title'])[1]", "active", true);
+
+            // INPUTASSET PartOfCompositeBindingTreeItem{"m_Name":"positive","m_Id":"b25a71de-239c-4d0a-8050-0169566cea38","m_Path":"<Keyboard>/upArrow","m_Interactions":"","m_Processors":"","m_Groups":"Keyboard","m_Action":"Trottle","m_Flags":8}
+            api.ButtonPress("<Keyboard>/upArrow", 10000, 1f, 10);
+            //api.AxisPress("Space", 1f, 1000);
+
         }
 
 
