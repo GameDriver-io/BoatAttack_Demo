@@ -15,7 +15,7 @@ namespace BoatAttack_Demo
         public void Connect()
         {
             api.Connect("localhost", 19734, true);
-            api.EnableHooks(HookingObject.ALL); // New input system
+            api.EnableHooks(HookingObject.MOUSE); // New input system
             /*
             api.LoggedMessage += (s, e) =>
             {
