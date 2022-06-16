@@ -32,7 +32,7 @@ namespace BoatAttack_Demo
             api.ClickObject(MouseButtons.LEFT, "//*[@name='Catergory Button']", 30);
             api.WaitForObjectValue("//*[@name='Image_square_singleplayer']", "active", true);
             api.ClickObject(MouseButtons.LEFT, "//*[@name='Image_square_singleplayer']", 30);
-            
+
             //Check the number of levels, and increase it to 3
             // Check (should be 1) --> (//*[@name='Option'])[1]/fn:component('TMPro.TextMeshProUGUI')/@text
             // Click --> (//*[@name='Right'])[1]
@@ -56,7 +56,11 @@ namespace BoatAttack_Demo
         public void MovementTest()
         {
             api.WaitForObjectValue("(//*[@name='text_title'])[1]", "active", true);
-            api.KeyPress(new KeyCode[] { KeyCode.W }, (ulong)api.GetLastFPS() * 5);
+            api.Wait(10000);
+
+            //Input test - Not currently working with AxisPress, ButtonPress, or KeyPress
+            api.ButtonPress("Keyboard/upArrow", 3000, 10);
+            api.Wait(5000);
         }
 
 
