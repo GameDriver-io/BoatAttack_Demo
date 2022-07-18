@@ -9,43 +9,58 @@ namespace BoatAttack_Demo
     [TestFixture]
     public class Tests
     {
-        ApiClient api = new ApiClient();
+        ApiClient api;
+
+        //Some test parameters and their overrides
+        //static string mode = "IDE";
+        static string mode = "standalone";
+
+        static string host = "localhost";
+        //static string host = "172.20.10.5";
+
+        public string testMode = TestContext.Parameters.Get("Mode", mode);
+        public string testHost = TestContext.Parameters.Get("Host", host);
+        public string pathToExe = TestContext.Parameters.Get("pathToExe", null);
+        
 
         [OneTimeSetUp]
         public void Connect()
         {
-            api.Connect("localhost", 19734, true);
-            api.EnableHooks(HookingObject.ALL); // New input system
-            /*
-            api.LoggedMessage += (s, e) =>
+            api = new ApiClient();
+            if (pathToExe != null)
             {
-                Console.WriteLine(e.Message);
-            };
-            */
+                ApiClient.Launch(pathToExe);
+                api.Connect("localhost", 19734, false, 30);
+            }
+            else if (testMode == "IDE")
+            {
+                api.Connect("localhost", 19734, true);
+            }
+            api.Connect("localhost", 19734, false, 30);
+
+
+            api.EnableHooks(HookingObject.ALL); // New input system
             api.Wait(3000);
         }
 
         [Test, Order(0)]
         public void StartGame()
         {
+            //Wait for "Race Mode" category to become active, then click it
             api.WaitForObjectValue("//*[@name='Catergory Button']", "active", true);
             api.ClickObject(MouseButtons.LEFT, "//*[@name='Catergory Button']", 30);
+
+            //Wait for "Single Player" option to become active, then click it
             api.WaitForObjectValue("//*[@name='Image_square_singleplayer']", "active", true);
             api.ClickObject(MouseButtons.LEFT, "//*[@name='Image_square_singleplayer']", 30);
 
-            //Check the number of levels, and increase it to 3
-            // Check (should be 1) --> (//*[@name='Option'])[1]/fn:component('TMPro.TextMeshProUGUI')/@text
-            // Click --> (//*[@name='Right'])[1]
-            // Check again (should be 3) --> (//*[@name='Option'])[1]/fn:component('TMPro.TextMeshProUGUI')/@text
-
+            //Wait for "Next" button to become active, then click it
             api.WaitForObjectValue("//*[@name='BaseButton_Next']", "active", true);
             api.ClickObject(MouseButtons.LEFT, "//*[@name='BaseButton_Next']", 30);
 
             api.Wait(1000);
-            // Change the name of the boat to GameDriver - not currently working
-            // /*[@name='MainMenuUI']/*[@name='Canvas']/*[@name='Race']/*[@name='Boat']/*[@name='Options']/*[@name='MenuOption_Name']/*[@name='Text']
-            //api.SetInputFieldText("(//*[@name='Text'])[3]/fn:component('TMPro.TextMeshProUGUI')", "GameDriver" );
 
+            //Wait for "Race" button to become active, then click it
             api.WaitForObjectValue("//*[@name='BaseButton_Race']", "active", true);
             api.ClickObject(MouseButtons.LEFT, "//*[@name='BaseButton_Race']", 30);
             api.Wait(5000);
@@ -55,7 +70,7 @@ namespace BoatAttack_Demo
         }
 
         [Test, Order(1)]
-        public void SimpleMovementTest() // TODO: refactor and abstract
+        public void SimpleMovementTest() 
         {
             api.WaitForObjectValue("(//*[@name='text_title'])[1]", "active", true);
             api.Wait(2000);
@@ -64,159 +79,133 @@ namespace BoatAttack_Demo
             Vector3 initialPos = api.GetObjectPosition("//boat[@name='Player 1​']");
 
             // Checkpoint 1
-            //Vector3 checkpoint1 = api.GetObjectPosition("(/Untagged[@name='checkpoint(Clone)'])[1]", CoordinateConversion.None);
             Vector3 checkpoint1 = new Vector3(-107, 0, 40);
 
-            //****Checkpoints still need to be hardcoded instead of using clones****
-
-            //Vector3 boat = api.GetObjectPosition("//boat[@name='Player 1​']");
-            //float Distance = api.CallMethod<float>("//boat[@name='Player 1​']/fn:component('UnityEngine.Transform')", "Vector3.Distance", new Vector3[] { checkpoint1, boat });
-            //int distance = 10;
-
-            while (api.GetObjectDistance("//boat[@name='Player 1​']", "(/Untagged[@name='checkpoint(Clone)'])[1]") > 5)
-            //while (distance > 5)
-            {   
-                //distance = api.CallMethod<int>("//boat[@name='Player 1​']/fn:component('UnityEngine.Vector3')", "Distance", new Vector3[] { checkpoint1, boat });
-                //boat = api.GetObjectPosition("//boat[@name='Player 1​']");
-                //Vector3 boat = api.GetObjectPosition("//boat[@name='Player 1']");
-                //Console.WriteLine(boat.ToString());
-                //Vector3 relBoatPos = api.CallMethod<Vector3>("//boat[@name='Player 1​']/fn:component('UnityEngine.Transform')", "InverseTransformPoint", new Vector3[] { checkpoint1 });
-                //Console.WriteLine(relBoatPos.ToString());
+            while (api.GetObjectDistance("//boat[@name='Player 1​']", "/*[@name='Checkpoint1']") > 5)
+            {     
                 api.CallMethod("//boat[@name='Player 1​']/fn:component('UnityEngine.Transform')", "LookAt", new Vector3[] { checkpoint1 });
-                api.AxisPress("<Keyboard>/upArrow", 1f, (ulong)api.GetLastFPS() * 3);
+                api.AxisPress("<Keyboard>/upArrow", 1f, (ulong)api.GetLastFPS() * 10);
 
-                //WIP to turn the boat with WASD input and replace the LookAt method 
-                //if (relBoatPos.x > 1)
-                //{
-                //    api.AxisPress("<Keyboard>/rightArrow", 1f, (ulong)api.GetLastFPS() / 3);
-                //} 
-                //else if (relBoatPos.x < 1)
-                //{
-                //    api.AxisPress("<Keyboard>/leftArrow", 1f, (ulong)api.GetLastFPS() / 3);
-                //}
-                
-
-
-                api.Wait(2000);
-
+                api.Wait((int)api.GetLastFPS() * 5);
             }
+            api.CaptureScreenshot(@"C:\Users\Hunter Golden\Boat_Attack_Demo\checkpoint1.jpg", false, true);
 
             // Arrow marker 4
-            //Vector3 arrow1 = NearThing(api.GetObjectPosition("//*[@name='Arrow (4)']", CoordinateConversion.None));
             Vector3 arrow1 = new Vector3(-75, 0, 74);
-            while (api.GetObjectDistance("//boat[@name='Player 1​']", "//*[@name='Arrow (4)']") > 5)
+
+            while (api.GetObjectDistance("//boat[@name='Player 1​']", "/*[@name='Checkpoint2']") > 5)
             {
                 api.CallMethod("//boat[@name='Player 1​']/fn:component('UnityEngine.Transform')", "LookAt", new Vector3[] { arrow1 });
-                api.AxisPress("<Keyboard>/upArrow", 1f, (ulong)api.GetLastFPS() * 2);
-                api.Wait(2000);
+                api.AxisPress("<Keyboard>/upArrow", 1f, (ulong)api.GetLastFPS() * 3);
+                
+                api.Wait((int)api.GetLastFPS() * 3);
             }
 
             // Checkpoint 2
-            //Vector3 checkpoint2 = api.GetObjectPosition("(/Untagged[@name='checkpoint(Clone)'])[2]", CoordinateConversion.None);
+            
             Vector3 checkpoint2 = new Vector3(-35, 0, 35);
-            while (api.GetObjectDistance("//boat[@name='Player 1​']", "(/Untagged[@name='checkpoint(Clone)'])[2]") > 5)
+
+            while (api.GetObjectDistance("//boat[@name='Player 1​']", "/*[@name='Checkpoint3']") > 5)
             {
                 api.CallMethod("//boat[@name='Player 1​']/fn:component('UnityEngine.Transform')", "LookAt", new Vector3[] { checkpoint2 });
-                api.AxisPress("<Keyboard>/upArrow", 1f, (ulong)api.GetLastFPS() * 3);
-                api.Wait(2000);
+                api.AxisPress("<Keyboard>/upArrow", 1f, (ulong)api.GetLastFPS() * 5);
+               
+                api.Wait((int)api.GetLastFPS() * 5);
             }
 
             // Arrow marker 7
-            //Vector3 arrow2 = NearThing(api.GetObjectPosition("//*[@name='Arrow (8)']", CoordinateConversion.None));
-            Vector3 arrow2 = new Vector3(-5, 0, 70);
-            while (api.GetObjectDistance("//boat[@name='Player 1​']", "//*[@name='Arrow (8)']") > 5)
+            
+            Vector3 arrow2 = NearThing(api.GetObjectPosition("//*[@name='Checkpoint4']", CoordinateConversion.None));
+            
+            while (api.GetObjectDistance("//boat[@name='Player 1​']", "/*[@name='Checkpoint4']") > 5)
             {
                 api.CallMethod("//boat[@name='Player 1​']/fn:component('UnityEngine.Transform')", "LookAt", new Vector3[] { arrow2 });
-                api.AxisPress("<Keyboard>/upArrow", 1f, (ulong)api.GetLastFPS() * 2);
-                api.Wait(2000);
+                api.AxisPress("<Keyboard>/upArrow", 1f, (ulong)api.GetLastFPS() * 5);
+                
+                api.Wait((int)api.GetLastFPS() * 5);
             }
 
             // Checkpoint 3
-            //Vector3 checkpoint3 = api.GetObjectPosition("(/Untagged[@name='checkpoint(Clone)'])[3]", CoordinateConversion.None);
+            
             Vector3 checkpoint3 = new Vector3(91, 0, 1);
-            while (api.GetObjectDistance("//boat[@name='Player 1​']", "(/Untagged[@name='checkpoint(Clone)'])[3]") > 5)
+
+            while (api.GetObjectDistance("//boat[@name='Player 1​']", "/*[@name='Checkpoint5']") > 5)
             {
                 api.CallMethod("//boat[@name='Player 1​']/fn:component('UnityEngine.Transform')", "LookAt", new Vector3[] { checkpoint3 });
-                api.AxisPress("<Keyboard>/upArrow", 1f, (ulong)api.GetLastFPS() * 3);
-                api.Wait(2000);
+                api.AxisPress("<Keyboard>/upArrow", 1f, (ulong)api.GetLastFPS() * 5);
+                
+                api.Wait((int)api.GetLastFPS() * 5);
             }
 
             // Arrow marker 11
-            //Vector3 arrow3 = NearThing(api.GetObjectPosition("//*[@name='Arrow (10)']", CoordinateConversion.None));
+            
             Vector3 arrow3 = new Vector3(137, 0, -30);
-            while (api.GetObjectDistance("//boat[@name='Player 1​']", "//*[@name='Arrow (10)']") > 5)
+
+            while (api.GetObjectDistance("//boat[@name='Player 1​']", "/*[@name='Checkpoint6']") > 5)
             {
                 api.CallMethod("//boat[@name='Player 1​']/fn:component('UnityEngine.Transform')", "LookAt", new Vector3[] { arrow3 });
-                api.AxisPress("<Keyboard>/upArrow", 1f, (ulong)api.GetLastFPS() * 2);
-                api.Wait(2000);
+                api.AxisPress("<Keyboard>/upArrow", 1f, (ulong)api.GetLastFPS() * 5);
+                
+                api.Wait((int)api.GetLastFPS() * 5);
             }
 
             // Checkpoint 4
-            //Vector3 checkpoint4 = api.GetObjectPosition("(/Untagged[@name='checkpoint(Clone)'])[4]", CoordinateConversion.None);
+            
             Vector3 checkpoint4 = new Vector3(27, 0, -63);
-            while (api.GetObjectDistance("//boat[@name='Player 1​']", "(/Untagged[@name='checkpoint(Clone)'])[4]") > 5)
+
+            while (api.GetObjectDistance("//boat[@name='Player 1​']", "/*[@name='Checkpoint7']") > 5)
             {
                 api.CallMethod("//boat[@name='Player 1​']/fn:component('UnityEngine.Transform')", "LookAt", new Vector3[] { checkpoint4 });
-                api.AxisPress("<Keyboard>/upArrow", 1f, (ulong)api.GetLastFPS() * 3);
-                api.Wait(2000);
+                api.AxisPress("<Keyboard>/upArrow", 1f, (ulong)api.GetLastFPS() * 5);
+                
+                api.Wait((int)api.GetLastFPS() * 5);
             }
 
             // Rock
-            //Vector3 nearRock = NearThing(api.GetObjectPosition("(//*[@name='Rock_Small_02_LOD1'])[3]", CoordinateConversion.None));
-            Vector3 nearRock = NearThing(new Vector3(-21, 0, -79));
-            Console.WriteLine(nearRock.ToString());
-            while (api.GetObjectDistance("//boat[@name='Player 1​']", "(//*[@name='Rock_Small_02_LOD1'])[3]") > 5)
+  
+            Vector3 nearRock = api.GetObjectPosition("/*[@name='Checkpoint8']", CoordinateConversion.None);
+ 
+            while (api.GetObjectDistance("//boat[@name='Player 1​']", "/*[@name='Checkpoint8']") > 5)
             {
                 api.CallMethod("//boat[@name='Player 1​']/fn:component('UnityEngine.Transform')", "LookAt", new Vector3[] { nearRock });
-                api.AxisPress("<Keyboard>/upArrow", 1f, (ulong)api.GetLastFPS() * 2);
-                api.Wait(1000);
+                api.AxisPress("<Keyboard>/upArrow", 1f, (ulong)api.GetLastFPS() * 5);
+                
+                api.Wait((int)api.GetLastFPS() * 5);
             }
 
             // Start/finish checkpoint
-            //Vector3 checkpoint5 = api.GetObjectPosition("/Untagged[@name='checkpoint(Clone)']", CoordinateConversion.None);
+            
             Vector3 checkpoint5 = new Vector3(-76, 0, -30);
-            while (api.GetObjectDistance("//boat[@name='Player 1​']", "/Untagged[@name='checkpoint(Clone)']") > 5)
+
+            while (api.GetObjectDistance("//boat[@name='Player 1​']", "/*[@name='Checkpoint9']") > 5)
             {
                 api.CallMethod("//boat[@name='Player 1​']/fn:component('UnityEngine.Transform')", "LookAt", new Vector3[] { checkpoint5 });
-                api.AxisPress("<Keyboard>/upArrow", 1f, (ulong)api.GetLastFPS() * 3);
-                api.Wait(2000);
+                api.AxisPress("<Keyboard>/upArrow", 1f, (ulong)api.GetLastFPS() * 5);
+                
+                api.Wait((int)api.GetLastFPS() * 5);
             }
 
             Assert.AreNotEqual(api.GetObjectPosition("//boat[@name='Player 1​']"), initialPos, "Boat Movement Failed!");
         }
 
-        /*
-         * Not working well, need to rethink
-        [Test, Order(2)]
-        public void ChaseTest()
-        {
-            var boatName = api.GetObjectFieldValue<string>("(//*[@name='BoatHull'])[2]/../@name");
-            Console.WriteLine($"The boat is named {boatName}");
-
-            // Wait for a competitor boat to pass, then chase it
-            while (api.GetObjectDistance("//boat[@name='Player 1​']", $"/boat[@name='{boatName}']") > 10)
-            {
-                api.Wait(500);
-            }
-
-            // Need an exit condition, i.e. "&& api.GetObjectDistance("//boat[@name='Player 1​']", "/Untagged[@name='checkpoint(Clone)']") < 4"
-            while (api.GetObjectDistance("//boat[@name='Player 1​']", $"/boat[@name='{boatName}']") < 10)
-            {
-                api.CallMethod("//boat[@name='Player 1​']/fn:component('UnityEngine.Transform')", "LookAt", new Vector3[] { api.GetObjectPosition($"/boat[@name='{boatName}']") });
-                api.AxisPress("<Keyboard>/upArrow", 1f, (ulong)api.GetLastFPS() * 1);
-                api.Wait(1000);
-            }
-        }
-        */
 
         [OneTimeTearDown]
+
+        //Remove hooks from agent and return control to the player.
         public void Disconnect()
         {
             api.DisableHooks(HookingObject.ALL);
             api.Disconnect();
         }
 
-
+        
+        
+        
+        
+        
+        
+        
+        //helper function
         public Vector3 NearThing(Vector3 thing)
         {
             Vector3 nearVector = new Vector3(thing.x, thing.y, thing.z - 5);
